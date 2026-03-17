@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+#### SVS-6: Confidential Streaming Yield Vault
+- **programs/svs-6**: New vault variant combining streaming yield (SVS-5) with confidential transfers (SVS-3)
+- `ConfidentialStreamVault` account: 294 bytes, stores streaming state + CT fields
+- Core instructions: `initialize`, `deposit`, `mint`, `withdraw`, `redeem` with streaming share price
+- Streaming instructions: `distribute_yield` (authority), `checkpoint` (permissionless)
+- Confidential instructions: `configure_account`, `apply_pending`
+- `effective_total_assets(now)` interpolation for continuous share price appreciation
+- All view functions use streaming price: `preview_deposit/mint/withdraw/redeem`, `convert_to_shares/assets`
+- Module support: fees, caps, locks, access control (behind `--features modules`)
+- PDA seed: `["confidential_stream_vault", asset_mint, vault_id]`
+
+#### Documentation
+- `docs/specs-SVS06.md`: Full specification (already existed as draft, now implemented)
+
 ## [0.3.0] - 2026-03-06
 
 ### Added

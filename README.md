@@ -10,6 +10,7 @@ Tokenized vault programs and TypeScript SDK for building yield-bearing vaults on
 | **SVS-2** | Public Vault (Stored) | Stored balance | None | Requires sync() | ✅ Devnet |
 | **SVS-3** | Private Vault (Live) | Live balance | Encrypted | No sync needed | ✅ Devnet |
 | **SVS-4** | Private Vault (Stored) | Stored balance | Encrypted | Requires sync() | ✅ Devnet |
+| **SVS-6** | Private Streaming Vault | Streaming (interpolated) | Encrypted | checkpoint() | 🔧 Implementation |
 
 ### Balance Model Comparison
 
@@ -45,6 +46,7 @@ Tokenized vault programs and TypeScript SDK for building yield-bearing vaults on
 | SVS-1 | `Bv8aVSQ3DJUe3B7TqQZRZgrNvVTh8TjfpwpoeR1ckDMC` | Same as devnet |
 | SVS-2 | `3UrYrxh1HmVgq7WPygZ5x1gNEaWFwqTMs7geNqMnsrtD` | Same as devnet |
 | SVS-3 | `EcpnYtaCBrZ4p4uq7dDr55D3fL9nsxbCNqpyUREGpPkh` | Same as devnet |
+| SVS-6 | `SVS6ConfStreamVau1tXXXXXXXXXXXXXXXXXXXXXXXXX` | Same as devnet |
 | SVS-4 | `2WP7LXWqrp1W4CwEJuVt2SxWPNY2n6AYmijh6Z4EeidY` | Same as devnet |
 
 ## Installation
@@ -361,7 +363,8 @@ solana-vault-standard/
 │   ├── svs-1/                    # Public vault, live balance
 │   ├── svs-2/                    # Public vault, stored balance
 │   ├── svs-3/                    # Private vault, live balance (beta)
-│   └── svs-4/                    # Private vault, stored balance (beta)
+│   ├── svs-4/                    # Private vault, stored balance (beta)
+│   └── svs-6/                    # Private streaming vault (CT + yield streaming)
 ├── modules/
 │   ├── svs-math/                 # Shared math (mul_div, rounding, conversion)
 │   ├── svs-fees/                 # Entry/exit fee calculation

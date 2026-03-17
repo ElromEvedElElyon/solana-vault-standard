@@ -1,6 +1,6 @@
 # SVS-6: Streaming Yield Vault (Confidential)
 
-## Status: Draft
+## Status: Implemented (programs/svs-6)
 ## Authors: Superteam Brasil
 ## Date: 2026-03-06
 ## Base: SVS-5 + Token-2022 Confidential Transfers
