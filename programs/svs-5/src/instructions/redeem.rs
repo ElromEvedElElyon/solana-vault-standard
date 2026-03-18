@@ -1,0 +1,179 @@
+//! Redeem instruction: burn exact shares to receive proportional assets at streaming price.
+
+use anchor_lang::prelude::*;
+use anchor_spl::{
+    token_2022::{self, Burn, Token2022},
+    token_interface::{transfer_checked, Mint, TokenAccount, TokenInterface, TransferChecked},
+};
+
+use crate::{
+    constants::VAULT_SEED,
+    error::VaultError,
+    events::Withdraw as WithdrawEvent,
+    math::{convert_to_assets, effective_total_assets, Rounding},
+    state::StreamVault,
+};
+
+#[cfg(feature = "modules")]
+use svs_module_hooks as module_hooks;
+
+#[derive(Accounts)]
+pub struct Redeem<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+
+    #[account(
+        mut,
+        constraint = !vault.paused @ VaultError::VaultPaused,
+    )]
+    pub vault: Account<'info, StreamVault>,
+
+    #[account(
+        constraint = asset_mint.key() == vault.asset_mint,
+    )]
+    pub asset_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(
+        mut,
+        constraint = user_asset_account.mint == vault.asset_mint,
+        constraint = user_asset_account.owner == user.key(),
+    )]
+    pub user_asset_account: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        constraint = asset_vault.key() == vault.asset_vault,
+    )]
+    pub asset_vault: InterfaceAccount<'info, TokenAccount>,
+
+    #[account(
+        mut,
+        constraint = shares_mint.key() == vault.shares_mint,
+    )]
+    pub shares_mint: InterfaceAccount<'info, Mint>,
+
+    #[account(
+        mut,
+        constraint = user_shares_account.mint == vault.shares_mint,
+        constraint = user_shares_account.owner == user.key(),
+    )]
+    pub user_shares_account: InterfaceAccount<'info, TokenAccount>,
+
+    pub asset_token_program: Interface<'info, TokenInterface>,
+    pub token_2022_program: Program<'info, Token2022>,
+}
+
+pub fn handler(ctx: Context<Redeem>, shares: u64, min_assets_out: u64) -> Result<()> {
+    require!(shares > 0, VaultError::ZeroAmount);
+
+    require!(
+        ctx.accounts.user_shares_account.amount >= shares,
+        VaultError::InsufficientShares
+    );
+
+    let vault = &ctx.accounts.vault;
+    let clock = Clock::get()?;
+    let now = clock.unix_timestamp;
+
+    // SVS-5: Use streaming effective_total_assets for share price calculation
+    let total_assets = effective_total_assets(vault, now)?;
+    let total_shares = vault.total_shares;
+
+    // Calculate assets to receive (floor rounding - user gets less)
+    let assets = convert_to_assets(
+        shares,
+        total_assets,
+        total_shares,
+        vault.decimals_offset,
+        Rounding::Floor,
+    )?;
+
+    // ===== Module Hooks (if enabled) =====
+    #[cfg(feature = "modules")]
+    let net_assets = {
+        let remaining = ctx.remaining_accounts;
+        let vault_key = vault.key();
+        let user_key = ctx.accounts.user.key();
+
+        module_hooks::check_deposit_access(remaining, &crate::ID, &vault_key, &user_key, &[])?;
+
+        module_hooks::check_share_lock(
+            remaining,
+            &crate::ID,
+            &vault_key,
+            &user_key,
+            clock.unix_timestamp,
+        )?;
+
+        let result = module_hooks::apply_exit_fee(remaining, &crate::ID, &vault_key, assets)?;
+        result.net_assets
+    };
+
+    #[cfg(not(feature = "modules"))]
+    let net_assets = assets;
+
+    require!(net_assets >= min_assets_out, VaultError::SlippageExceeded);
+    require!(assets <= total_assets, VaultError::InsufficientAssets);
+
+    // Burn shares from user
+    token_2022::burn(
+        CpiContext::new(
+            ctx.accounts.token_2022_program.to_account_info(),
+            Burn {
+                mint: ctx.accounts.shares_mint.to_account_info(),
+                from: ctx.accounts.user_shares_account.to_account_info(),
+                authority: ctx.accounts.user.to_account_info(),
+            },
+        ),
+        shares,
+    )?;
+
+    // Prepare vault signer seeds
+    let asset_mint_key = ctx.accounts.vault.asset_mint;
+    let vault_id_bytes = ctx.accounts.vault.vault_id.to_le_bytes();
+    let bump = ctx.accounts.vault.bump;
+    let signer_seeds: &[&[&[u8]]] = &[&[
+        VAULT_SEED,
+        asset_mint_key.as_ref(),
+        vault_id_bytes.as_ref(),
+        &[bump],
+    ]];
+
+    // Transfer net assets to user (fee stays in vault)
+    transfer_checked(
+        CpiContext::new_with_signer(
+            ctx.accounts.asset_token_program.to_account_info(),
+            TransferChecked {
+                from: ctx.accounts.asset_vault.to_account_info(),
+                to: ctx.accounts.user_asset_account.to_account_info(),
+                mint: ctx.accounts.asset_mint.to_account_info(),
+                authority: ctx.accounts.vault.to_account_info(),
+            },
+            signer_seeds,
+        ),
+        net_assets,
+        ctx.accounts.asset_mint.decimals,
+    )?;
+
+    // Update vault tracked state
+    let vault = &mut ctx.accounts.vault;
+    vault.total_shares = vault
+        .total_shares
+        .checked_sub(shares)
+        .ok_or(VaultError::MathOverflow)?;
+    vault.base_assets = vault
+        .base_assets
+        .checked_sub(net_assets)
+        .ok_or(VaultError::MathOverflow)?;
+
+    emit!(WithdrawEvent {
+        vault: ctx.accounts.vault.key(),
+        caller: ctx.accounts.user.key(),
+        receiver: ctx.accounts.user.key(),
+        owner: ctx.accounts.user.key(),
+        assets: net_assets,
+        shares,
+    });
+
+    Ok(())
+}
