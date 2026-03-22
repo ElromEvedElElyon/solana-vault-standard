@@ -23,6 +23,9 @@ svs_8 = "9KNtodSV6CWpLH6tdJUbpotXZCCgSzFDJnr4KoE8mKDW"
 [registry]
 url = "https://api.apr.dev"
 
+[test]
+startup_wait = 15000
+
 [provider]
 cluster = "localnet"
 wallet = "~/.config/solana/id.json"
