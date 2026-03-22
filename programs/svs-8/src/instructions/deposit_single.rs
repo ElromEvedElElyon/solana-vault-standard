@@ -23,20 +23,20 @@ pub struct DepositSingle<'info> {
         mut,
         constraint = !vault.paused @ VaultError::VaultPaused,
     )]
-    pub vault: Account<'info, MultiAssetVault>,
+    pub vault: Box<Account<'info, MultiAssetVault>>,
 
     #[account(
         mut,
         constraint = shares_mint.key() == vault.shares_mint,
     )]
-    pub shares_mint: InterfaceAccount<'info, Mint>,
+    pub shares_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
         constraint = user_shares_account.mint == vault.shares_mint,
         constraint = user_shares_account.owner == user.key(),
     )]
-    pub user_shares_account: InterfaceAccount<'info, TokenAccount>,
+    pub user_shares_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     // The specific asset being deposited
     #[account(
@@ -44,22 +44,22 @@ pub struct DepositSingle<'info> {
         bump = asset_entry.bump,
         constraint = asset_entry.vault == vault.key() @ VaultError::AssetNotFound,
     )]
-    pub asset_entry: Account<'info, AssetEntry>,
+    pub asset_entry: Box<Account<'info, AssetEntry>>,
 
-    pub asset_mint: InterfaceAccount<'info, Mint>,
+    pub asset_mint: Box<InterfaceAccount<'info, Mint>>,
 
     #[account(
         mut,
         constraint = user_asset_account.mint == asset_mint.key(),
         constraint = user_asset_account.owner == user.key(),
     )]
-    pub user_asset_account: InterfaceAccount<'info, TokenAccount>,
+    pub user_asset_account: Box<InterfaceAccount<'info, TokenAccount>>,
 
     #[account(
         mut,
         constraint = asset_vault.key() == asset_entry.asset_vault,
     )]
-    pub asset_vault: InterfaceAccount<'info, TokenAccount>,
+    pub asset_vault: Box<InterfaceAccount<'info, TokenAccount>>,
 
     pub asset_token_program: Interface<'info, TokenInterface>,
     pub token_2022_program: Program<'info, Token2022>,

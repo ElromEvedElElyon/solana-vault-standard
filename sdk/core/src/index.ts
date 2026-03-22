@@ -46,6 +46,7 @@ export * from "./cap";
 export * from "./emergency";
 export * from "./access-control";
 export * from "./multi-asset";
+export * from "./basket-vault";
 export * from "./timelock";
 export * from "./strategy";
 
