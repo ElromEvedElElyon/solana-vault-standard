@@ -62,6 +62,24 @@ pub struct ConfidentialVault {
 
 The different struct names mean the Anchor IDL generates different account discriminators. The core SDK (`SolanaVault`) fetches `program.account["vault"]` and will not work with SVS-3/4 programs which expose `program.account["confidentialVault"]`.
 
+**MultiAssetVault (SVS-8) — 157 bytes:**
+```rust
+pub struct MultiAssetVault {
+    pub authority: Pubkey,       // 32
+    pub shares_mint: Pubkey,     // 32
+    pub total_shares: u64,       // 8
+    pub decimals_offset: u8,     // 1
+    pub bump: u8,                // 1
+    pub paused: bool,            // 1
+    pub vault_id: u64,           // 8
+    pub num_assets: u8,          // 1
+    pub base_decimals: u8,       // 1
+    pub _reserved: [u8; 64],     // 64
+}
+```
+
+SVS-8 also uses `AssetEntry` (133 bytes) per basket asset and `OraclePrice` (81 bytes) per oracle. See [SVS-8.md](./SVS-8.md) for full account layout.
+
 ## Balance Models
 
 ### Live Balance (SVS-1, SVS-3)

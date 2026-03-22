@@ -1,6 +1,6 @@
 # SVS-8: Multi-Asset Vault
 
-## Status: Draft
+## Status: Implemented
 ## Authors: Superteam Brasil
 ## Date: 2026-03-06
 ## Base: ERC-7575 adapted — Multi-token basket vault

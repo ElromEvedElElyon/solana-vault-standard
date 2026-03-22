@@ -9,6 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+#### SVS-8: Multi-Asset Basket Vault
+- **programs/svs-8**: ERC-7575-inspired vault managing up to 16 SPL tokens in a weighted basket with unified Token-2022 shares
+- **sdk/core/basket-vault.ts**: `BasketVault` SDK class with PDA derivation helpers and remaining_accounts builders
+- **scripts/svs-8/**: 10-step devnet integration test (basic.ts + helpers.ts)
+- **tests/svs-8.ts**: Integration test suite
+- **docs/SVS-8.md**: Architecture, instruction reference, oracle system, security properties
+- Supports single-asset and proportional deposit/redeem operations
+- Oracle-weighted portfolio valuation in configurable base unit (e.g., USD)
+- View instructions: `total_portfolio_value`, `preview_deposit`, `preview_redeem`
+- Program ID (devnet): `9KNtodSV6CWpLH6tdJUbpotXZCCgSzFDJnr4KoE8mKDW`
+
 #### SVS-5: Streaming Yield Vault
 - **programs/svs-5**: Time-interpolated yield distribution vault using `distribute_yield(amount, duration)` + `checkpoint()`
 - **sdk/core/streaming-vault.ts**: `StreamingVault` SDK class with `distributeYield()`, `checkpoint()`, `getStreamInfo()`, `effectiveTotalAssets()`

@@ -11,6 +11,7 @@ Tokenized vault programs and TypeScript SDK for building yield-bearing vaults on
 | **SVS-3** | Private Vault (Live) | Live balance | Encrypted | No sync needed | ✅ Devnet |
 | **SVS-4** | Private Vault (Stored) | Stored balance | Encrypted | Requires sync() | ✅ Devnet |
 | **SVS-5** | Streaming Yield Vault | Interpolated balance | None | distribute_yield() + checkpoint() | ✅ Devnet |
+| **SVS-8** | Multi-Asset Basket Vault | Oracle-weighted basket | None | Single/proportional deposit+redeem | ✅ Devnet |
 
 ### Balance Model Comparison
 
@@ -55,6 +56,7 @@ Tokenized vault programs and TypeScript SDK for building yield-bearing vaults on
 | SVS-3 | `EcpnYtaCBrZ4p4uq7dDr55D3fL9nsxbCNqpyUREGpPkh` | Same as devnet |
 | SVS-4 | `2WP7LXWqrp1W4CwEJuVt2SxWPNY2n6AYmijh6Z4EeidY` | Same as devnet |
 | SVS-5 | `3XQX3ZKGcy618XyWMmQiukYohJNSh3JNWoffq8ZeFdcS` | Same as devnet |
+| SVS-8 | `9KNtodSV6CWpLH6tdJUbpotXZCCgSzFDJnr4KoE8mKDW` | Same as devnet |
 
 ## Installation
 

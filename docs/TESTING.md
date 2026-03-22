@@ -80,7 +80,8 @@ Located in `tests/`:
 | `invariants.ts` | Mathematical invariants | 15 |
 | `admin-extended.ts` | Admin operations | 10 |
 | `full-lifecycle.ts` | End-to-end flows | 8 |
-| **Total** | | **256** |
+| `svs-8.ts` | SVS-8 multi-asset basket vault | 15 |
+| **Total** | | **271** |
 
 **Note:** SVS-3/SVS-4 confidential transfer tests require the proof backend running (`cd proofs-backend && cargo run`). Without it, CT-dependent tests are automatically skipped.
 
